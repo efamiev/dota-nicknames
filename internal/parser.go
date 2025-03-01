@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"log"
@@ -17,7 +17,7 @@ type MatchData struct {
 	Items    []string
 }
 
-func matchData(url string) []MatchData {
+func FetchMatchData(url string) []MatchData {
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -47,3 +47,4 @@ func matchData(url string) []MatchData {
 
 	return matches
 }
+

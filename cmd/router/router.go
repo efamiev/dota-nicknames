@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/gofiber/fiber/v3"
+	"dota-nicknames/internal"
 )
 
 type Request struct {
@@ -39,8 +40,9 @@ func main() {
 			})
 		}
 
-		return c.JSON(matchData(req.URL))
+		return c.JSON(internal.FetchMatchData(req.URL))
 	})
 
 	log.Fatal(app.Listen(":3000"))
 }
+
