@@ -4,8 +4,8 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/gofiber/fiber/v3"
 	"dota-nicknames/internal"
+	"github.com/gofiber/fiber/v3"
 )
 
 type Request struct {
@@ -45,4 +45,3 @@ func main() {
 
 	log.Fatal(app.Listen(":3000"))
 }
-

@@ -47,4 +47,3 @@ func FetchMatchData(url string) []MatchData {
 
 	return matches
 }
-
