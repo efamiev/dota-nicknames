@@ -1,0 +1,14 @@
+package components
+
+templ Form() {
+	<form
+		hx-post="/generate"
+		hx-trigger="submit"
+		hx-target="#result"
+	>
+		<label for="url">Название поля:</label>
+		<input type="text" id="url" name="url" required>
+		<button type="submit">Начать операцию</button>
+	</form>
+}
+

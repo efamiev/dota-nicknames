@@ -1,0 +1,16 @@
+package components
+
+import "fmt"
+
+templ List(id int, nicknames []string) {
+	if id == 0 {
+		Zero
+	} else {
+	<ul hx-ext={"/sse/" + fmt.Sprint(id)} sse-connect={"/sse/" + fmt.Sprint(id)} hx-swap="beforeend" sse-swap={"nicknames-" + fmt.Sprint(id)}>
+		for i, nick := range nicknames {
+			<li>{fmt.Sprint(i)}. {nick}</li>
+		}
+	</ul>
+	}
+}
+

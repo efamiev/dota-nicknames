@@ -1,0 +1,21 @@
+package components
+
+templ Index(children ...templ.Component) {
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<title>Dota nicknames</title>
+		<script src="https://unpkg.com/htmx.org@1.9.5"></script>
+		<script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+		</head>
+		<body hx-ext="sse">
+			<h1>Введите ссылку на матчи dotabuff</h1>
+			for _, child := range children {
+				@child
+			}
+			<div id="result"></div>
+		</body>
+	</html>
+}
