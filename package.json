@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^4.0.9"
+  },
+  "dependencies": {
+    "htmx-ext-sse": "^2.2.2",
+    "htmx.org": "^2.0.4"
+  }
+}

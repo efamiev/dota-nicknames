@@ -1,14 +1,17 @@
 package components
 
 templ Form() {
-	<form
-		hx-post="/generate"
-		hx-trigger="submit"
-		hx-target="#result"
-	>
-		<label for="url">Название поля:</label>
-		<input type="text" id="url" name="url" required>
-		<button type="submit">Начать операцию</button>
+	<form class="bg-gray-900 p-6 rounded-xl shadow-xl flex items-center" hx-post="/generate" hx-trigger="submit" hx-target="#nickname-results">
+		<div class="relative flex-1">
+				<input type="url" placeholder="Вставьте ссылку на Dotabuff..."
+						name="url"
+						class="w-full p-4 pl-5 text-white bg-gray-800 rounded-xl border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+						required>
+		</div>
+		<button type="submit"
+				class="ml-3 px-6 py-4 text-white bg-blue-600 hover:bg-blue-700 transition rounded-xl font-semibold shadow-md">
+				Отправить
+		</button>
 	</form>
 }
 

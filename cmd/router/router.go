@@ -46,6 +46,8 @@ func extractPlayerID(url string) (int, error) {
 func main() {
 	app := fiber.New()
 
+	app.Static("/static/", "./static")
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		c.Set("Content-Type", "text/html")
 
