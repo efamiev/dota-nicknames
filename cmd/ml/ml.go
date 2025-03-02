@@ -8,7 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
+	"regexp"
+	// "time"
 )
 
 type OpenAIRequest struct {
@@ -22,18 +23,25 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+type Choice struct {
+	Message Message `json:"message"`
+}
+
+type APIResponse struct {
+	Choices []Choice `json:"choices"`
+}
+
+var apiKey = os.Getenv("API_KEY")
+
 func nicks(url string) string {
 	matches := internal.FetchMatchData(url)
-	matchesJson, _ := json.MarshalIndent(&matches, "", " ")
+	matchesJson, _ := json.MarshalIndent(matches[:20], "", " ")
 
-	log.Println("NICKS", string(matchesJson))
 	return string(matchesJson)
 }
 
 func generateNick() ([]string, error) {
-	// matches := nicks("https://www.dotabuff.com/players/321580662/matches")
-
-	apiKey := os.Getenv("API_KEY")
+	matches := nicks("https://www.dotabuff.com/players/321580662/matches")
 
 	reqBody := OpenAIRequest{
 		Model: "deepseek/deepseek-chat:free",
@@ -43,25 +51,8 @@ func generateNick() ([]string, error) {
 				Content: "Предложим, ты работаешь в сервисе по генерации никнеймов для игроков дота 2. Твоя задача заключается в том, чтобы анализировать страничку профиля игрока на ресурсе Dotabuff, и, основываяюсь на том, каким героем он играл больше всего за полседние 20 игр, а так же процент побед и уровень KDA, предлагать пользователю на выбор 5 никнеймов в юмористическом стиле (предпочитая абсурдизм и постмодернизм). При генерации никнеймов, нужно так же учитывать локальные мемы русскоязычного сообщества Dota 2",
 			},
 			{
-				Role: "user",
-				Content: `[
-					{
-						"Hero": "Troll Warlord",
-						"Result": "Lost Match",
-						"KDA": "7/6/13",
-						"Duration": "40:25",
-						"Role": "Core Role",
-						"Lane": "Safe Lane",
-						"Items": [
-							"Phase Boots",
-							"Battle Fury",
-							"Manta Style",
-							"Black King Bar",
-							"Silver Edge",
-							"Butterfly"
-						]
-					}
-				]`,
+				Role:    "user",
+				Content: matches,
 			},
 		},
 	}
@@ -70,7 +61,6 @@ func generateNick() ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	log.Println(string(jsonData))
 
 	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -80,7 +70,8 @@ func generateNick() ([]string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{Timeout: time.Second * 30}
+	// client := &http.Client{Timeout: time.Second * 30}
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return []string{}, err
@@ -93,11 +84,33 @@ func generateNick() ([]string, error) {
 		return []string{}, err
 	}
 
-	// jres, _ := json.Unmarshal(body, "")
+	var data APIResponse
 
-	log.Println(string(body))
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Println("Ошибка парсинга JSON:", err)
+		return []string{}, nil
+	}
 
-	return []string{}, nil
+	res := data.Choices[0].Message.Content
+
+	// Регулярное выражение для поиска никнеймов и их описаний
+	re := regexp.MustCompile(`\d+\.\s\*\*(.*?)\*\*\s*\((.*?)\)`)
+
+	// Извлекаем все совпадения
+	rawNicks := re.FindAllStringSubmatch(res, -1)
+
+	// Заполняем слайс никнеймами и описаниями
+	var nicknames []string
+	for _, match := range rawNicks {
+		if len(match) > 2 {
+			nicknames = append(nicknames, match[1]+" - "+match[2])
+		}
+	}
+
+	log.Println("Извлеченные никнеймы:", nicknames)
+
+	return nicknames, nil
 }
 
 func main() {
