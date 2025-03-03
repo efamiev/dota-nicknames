@@ -33,7 +33,9 @@ func GetMatches(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(parsers.FetchMatchData(req.URL))
+	matches, _ := parsers.FetchMatchData(req.URL)
+
+	return c.JSON(matches)
 }
 
 func AddTask(c *fiber.Ctx) error {
@@ -60,5 +62,6 @@ func AddTask(c *fiber.Ctx) error {
 	id, _ := helpers.ExtractPlayerID(req.URL)
 
 	c.Set("HX-Location", "/"+fmt.Sprint(id))
-	return c.SendString("Думаем...")
+	
+	return c.JSON(map[string]int{"id": id})
 }

@@ -3,12 +3,14 @@ package llm
 import (
 	"bytes"
 	"dota-nicknames/services/parsers"
+	"dota-nicknames/types"
+	"fmt"
+
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 )
 
 type OpenAIRequest struct {
@@ -30,84 +32,99 @@ type APIResponse struct {
 	Choices []Choice `json:"choices"`
 }
 
-var apiKey = os.Getenv("API_KEY")
-
-func nicks(url string) string {
-	matches := parsers.FetchMatchData(url)
-	matchesJson, _ := json.MarshalIndent(matches[:20], "", " ")
-
-	return string(matchesJson)
+type APIError struct {
+	Error struct {
+		Message string `json:"message"`
+		Code    int    `json:"code"`
+	} `json:"error"`
 }
 
-func GenerateNicknames() ([]string, error) {
-	matches := nicks("https://www.dotabuff.com/players/321580662/matches")
+var apiKey = os.Getenv("API_KEY")
 
-	reqBody := OpenAIRequest{
+func GenerateNicknames(id int) ([]types.Nickname, error) {
+	matches, err := fetchMatches(id)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка получения матчей: %w", err)
+	}
+	log.Printf("Для аккаунта %d получены матчи %s", id, matches)
+
+	reqBody, err := json.Marshal(OpenAIRequest{
 		Model: "deepseek/deepseek-chat:free",
 		Messages: []Message{
-			{
-				Role:    "system",
-				Content: "Предложим, ты работаешь в сервисе по генерации никнеймов для игроков дота 2. Твоя задача заключается в том, чтобы анализировать страничку профиля игрока на ресурсе Dotabuff, и, основываяюсь на том, каким героем он играл больше всего за полседние 20 игр, а так же процент побед и уровень KDA, предлагать пользователю на выбор 5 никнеймов в юмористическом стиле (предпочитая абсурдизм и постмодернизм). При генерации никнеймов, нужно так же учитывать локальные мемы русскоязычного сообщества Dota 2",
-			},
-			{
-				Role:    "user",
-				Content: matches,
-			},
+			{Role: "system",	Content: types.LLMContent},
+			{Role: "user", Content: string(matches)},
 		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("ошибка сериализации запроса: %w", err)
 	}
 
-	jsonData, err := json.Marshal(reqBody)
+	body, err := callLLM(reqBody)
 	if err != nil {
-		return []string{}, err
-	}
-
-	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return []string{}, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	// client := &http.Client{Timeout: time.Second * 30}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return []string{}, err
-	}
-	defer resp.Body.Close()
-
-	// Читаем ответ
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var data APIResponse
 
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Println("Ошибка парсинга JSON:", err)
-		return []string{}, nil
+		return nil, err
 	}
 
-	res := data.Choices[0].Message.Content
+	var nicknames []types.Nickname
 
-	// Регулярное выражение для поиска никнеймов и их описаний
-	re := regexp.MustCompile(`\d+\.\s\*\*(.*?)\*\*\s*\((.*?)\)`)
-
-	// Извлекаем все совпадения
-	rawNicks := re.FindAllStringSubmatch(res, -1)
-
-	// Заполняем слайс никнеймами и описаниями
-	var nicknames []string
-	for _, match := range rawNicks {
-		if len(match) > 2 {
-			nicknames = append(nicknames, match[1]+" - "+match[2])
-		}
-	}
-
-	log.Println("Извлеченные никнеймы:", nicknames)
+	// Добавить проверку на длину data.Choices
+	json.Unmarshal([]byte(data.Choices[0].Message.Content), &nicknames)
 
 	return nicknames, nil
+}
+
+func fetchMatches(id int) ([]byte, error) {
+	url := fmt.Sprintf("https://www.dotabuff.com/players/%d/matches", id)
+	
+	matches, err := parsers.FetchMatchData(url)
+	if matches == nil || err != nil {
+		return nil, fmt.Errorf("не удалось получить матчи для ID %d %w", id, err)
+	}
+	
+	matchesJson, err := json.Marshal(matches)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось получить матчи для ID %d %w", id, err)
+	}
+
+	return matchesJson, nil
+}
+
+func callLLM(jsonData []byte) ([]byte, error) {
+	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("ошибка создания HTTP-запроса: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка отправки запроса: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Читаем тело ответа
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка чтения ответа LLM API: %w", err)
+	}
+
+	// Обрабатываем статус код
+	if resp.StatusCode != http.StatusOK {
+		var apiErr APIError
+		if err := json.Unmarshal(body, &apiErr); err != nil {
+			return nil, fmt.Errorf("ошибка LLM API (%d): %s", resp.StatusCode, string(body))
+		}
+		return nil, fmt.Errorf("ошибка LLM API (%d): %s", apiErr.Error.Code, apiErr.Error.Message)
+	}
+
+	return body, nil
 }

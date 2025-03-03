@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -17,19 +18,24 @@ type MatchData struct {
 	Items    []string
 }
 
-func FetchMatchData(url string) []MatchData {
+func FetchMatchData(url string) ([]MatchData, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return []MatchData{}, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		return []MatchData{}, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
+	}
+
+	// Добавить обработку закрытого профиля
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	matches := goquery.Map(doc.Find("section tbody tr"), func(i int, s *goquery.Selection) MatchData {
+	matches := goquery.Map(doc.Find("section tbody tr").Slice(0, 20), func(i int, s *goquery.Selection) MatchData {
 		match := MatchData{}
 
 		match.Hero = s.Find("td").Eq(1).Find("a").Text()
@@ -45,5 +51,5 @@ func FetchMatchData(url string) []MatchData {
 		return match
 	})
 
-	return matches
+	return matches, nil
 }

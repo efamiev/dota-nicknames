@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	// url := "https://www.dotabuff.com/players/321580662/matches"
-	llm.GenerateNicknames()
+	print(llm.GenerateNicknames(321580662))
 }
