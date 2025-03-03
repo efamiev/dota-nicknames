@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"dota-nicknames/helpers"
-	"dota-nicknames/internal"
+	"dota-nicknames/services/parsers"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,7 +33,7 @@ func GetMatches(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(internal.FetchMatchData(req.URL))
+	return c.JSON(parsers.FetchMatchData(req.URL))
 }
 
 func AddTask(c *fiber.Ctx) error {

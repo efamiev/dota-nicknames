@@ -1,11 +1,10 @@
 package main
 
 import (
-	"dota-nicknames/internal"
+	"dota-nicknames/services/llm"
 )
 
 func main() {
 	// url := "https://www.dotabuff.com/players/321580662/matches"
-
-	internal.GenerateNicknames()
+	llm.GenerateNicknames()
 }

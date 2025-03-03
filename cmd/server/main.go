@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"log"
-	"strconv"
 	"dota-nicknames/components"
 	"dota-nicknames/handlers"
 	"dota-nicknames/helpers"
-	"dota-nicknames/internal"
+	"dota-nicknames/types"
+	"log"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -30,7 +30,7 @@ func main() {
 	app.Get("/:id", func(c *fiber.Ctx) error {
 		id, _ := strconv.Atoi(c.Params("id"))
 
-		nicknames := []internal.Nickname{
+		nicknames := []types.Nickname{
 			{Name: "InvokerGod", Description: "Если твои комбо быстрее, чем анимация заклинания, этот ник идеально подойдёт для тебя. 10/10 каток заканчиваются твоими хайлайтами."},
 			{Name: "HookMaster", Description: "Ты попадёшь даже в тени деревьев. Враги знают, что если ты на Пудже, лучше не выходить из таверны."},
 			{Name: "RampageHunter", Description: "Твой стиль игры — идти только на рампагу. Союзники могут не понять, но в конце игры всё равно дадут лайк."},
@@ -38,9 +38,9 @@ func main() {
 			{Name: "SilentSupport", Description: "Ты никогда не жалуешься, но всегда спасаешь команду. Идеальный саппорт, который понимает игру лучше, чем керри."},
 		}
 
-		cache := map[int][]internal.Nickname{
+		cache := map[int][]types.Nickname{
 			321580662: nicknames,
-			1: {},
+			1:         {},
 		}
 
 		return helpers.Render(c, components.Index(components.List(id, cache[id])))

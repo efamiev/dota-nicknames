@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"dota-nicknames/components"
-	"dota-nicknames/internal"
+	"dota-nicknames/types"
 	"fmt"
 	"log"
 	"strconv"
@@ -29,7 +29,7 @@ func Sse(c *fiber.Ctx) error {
 
 	var buf bytes.Buffer
 
-	nicknames := []internal.Nickname{
+	nicknames := []types.Nickname{
 		{Name: "InvokerGod", Description: "Если твои комбо быстрее, чем анимация заклинания, этот ник идеально подойдёт для тебя. 10/10 каток заканчиваются твоими хайлайтами."},
 		{Name: "HookMaster", Description: "Ты попадёшь даже в тени деревьев. Враги знают, что если ты на Пудже, лучше не выходить из таверны."},
 		{Name: "RampageHunter", Description: "Твой стиль игры — идти только на рампагу. Союзники могут не понять, но в конце игры всё равно дадут лайк."},
@@ -44,7 +44,7 @@ func Sse(c *fiber.Ctx) error {
 	c.Status(fiber.StatusOK).Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 		time.Sleep(5 * time.Second)
 		fmt.Fprintf(w, "event: nicknames-%s\ndata: %s\n\n", strId, buf.String())
-		
+
 		err := w.Flush()
 		if err != nil {
 			// Refreshing page in web browser will establish a new

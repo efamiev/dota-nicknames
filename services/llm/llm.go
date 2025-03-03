@@ -1,14 +1,14 @@
-package internal
+package llm
 
 import (
 	"bytes"
+	"dota-nicknames/services/parsers"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
-	// "time"
 )
 
 type OpenAIRequest struct {
@@ -30,15 +30,10 @@ type APIResponse struct {
 	Choices []Choice `json:"choices"`
 }
 
-type Nickname struct {
-	Name string
-	Description string
-}
-
 var apiKey = os.Getenv("API_KEY")
 
 func nicks(url string) string {
-	matches := FetchMatchData(url)
+	matches := parsers.FetchMatchData(url)
 	matchesJson, _ := json.MarshalIndent(matches[:20], "", " ")
 
 	return string(matchesJson)
