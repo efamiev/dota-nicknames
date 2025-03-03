@@ -30,6 +30,11 @@ type APIResponse struct {
 	Choices []Choice `json:"choices"`
 }
 
+type Nickname struct {
+	Name string
+	Description string
+}
+
 var apiKey = os.Getenv("API_KEY")
 
 func nicks(url string) string {

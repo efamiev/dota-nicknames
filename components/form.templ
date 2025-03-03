@@ -1,7 +1,7 @@
 package components
 
 templ Form() {
-	<form class="bg-gray-900 p-6 rounded-xl shadow-xl flex items-center" hx-post="/generate" hx-trigger="submit" hx-target="#nickname-results">
+	<form class="bg-gray-900 p-6 rounded-xl shadow-xl flex items-center" hx-post="/api/add-task" hx-trigger="submit">
 		<div class="relative flex-1">
 				<input type="url" placeholder="Вставьте ссылку на Dotabuff..."
 						name="url"

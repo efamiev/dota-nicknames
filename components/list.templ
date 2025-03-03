@@ -1,16 +1,47 @@
 package components
 
 import "fmt"
+import "dota-nicknames/internal"
 
-templ List(id int, nicknames []string) {
-	if id == 0 {
-		Zero
+templ List(id int, nicknames []internal.Nickname) {
+	if len(nicknames) == 0 {
+		<div
+			class="bg-gray-900 p-6 rounded-2xl shadow-xl text-left"
+			hx-ext={"/sse/" + fmt.Sprint(id)}
+			sse-connect={"/sse/" + fmt.Sprint(id)}
+			hx-swap="outerHTML"
+			sse-swap={"nicknames-" + fmt.Sprint(id)}
+		>
+			<h2 class="text-xl font-semibold text-gray-200 mb-4">🤔 Думаем...</h2>
+				<div class="max-h-96 overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+					<ul class="space-y-6">
+						for _, nick := range nicknames {
+							<li class="p-5 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
+								<strong class="text-blue-400 text-lg">{nick.Name}</strong>
+								<p class="text-gray-300 text-sm mt-2 leading-relaxed">
+									{nick.Description}
+								</p>
+							</li>
+						}
+				</ul>
+			</div>
+		</div>
 	} else {
-	<ul hx-ext={"/sse/" + fmt.Sprint(id)} sse-connect={"/sse/" + fmt.Sprint(id)} hx-swap="beforeend" sse-swap={"nicknames-" + fmt.Sprint(id)}>
-		for i, nick := range nicknames {
-			<li>{fmt.Sprint(i)}. {nick}</li>
-		}
-	</ul>
+	<div class="bg-gray-900 p-6 rounded-2xl shadow-xl text-left">
+		<h2 class="text-xl font-semibold text-gray-200 mb-4">🎮 Подобранные ники</h2>
+		<div class="max-h-96 overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+			<ul class="space-y-6">
+				for _, nick := range nicknames {
+				<li class="p-5 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
+					<strong class="text-blue-400 text-lg">{nick.Name}</strong>
+					<p class="text-gray-300 text-sm mt-2 leading-relaxed">
+					{nick.Description}
+					</p>
+				</li>
+				}
+			</ul>
+		</div>
+	</div>
 	}
 }
 
