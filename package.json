@@ -1,9 +1,13 @@
 {
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.0.9"
   },
   "dependencies": {
     "htmx-ext-sse": "^2.2.2",
     "htmx.org": "^2.0.4"
+  },
+  "scripts": {
+    "build": "node build.js"
   }
 }
