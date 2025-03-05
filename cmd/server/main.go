@@ -9,6 +9,8 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/gofiber/fiber/v2/middleware/pprof"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,6 +22,8 @@ type Request struct {
 
 func main() {
 	app := fiber.New()
+	
+	app.Use(pprof.New())
 
 	app.Static("/static/", "./static")
 
@@ -51,6 +55,6 @@ func main() {
 	api := app.Group("/api")
 	api.Post("/matches", handlers.GetMatches)
 	api.Post("/add-task", handlers.AddTask)
-
+	
 	log.Fatal(app.Listen(":3000"))
 }
