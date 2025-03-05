@@ -13,7 +13,7 @@ templ List(id int, nicknames []types.Nickname) {
 			sse-swap={"nicknames-" + fmt.Sprint(id)}
 		>
 			<h2 class="text-xl font-semibold text-gray-200 mb-4">🤔 Думаем...</h2>
-				<div class="max-h-96 overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+				<div class="space-y-6 scrollbar-track-gray-800">
 					<ul class="space-y-6">
 						for _, nick := range nicknames {
 							<li class="p-5 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
@@ -29,7 +29,7 @@ templ List(id int, nicknames []types.Nickname) {
 	} else {
 	<div class="bg-gray-900 p-6 rounded-2xl shadow-xl text-left">
 		<h2 class="text-xl font-semibold text-gray-200 mb-4">🎮 Подобранные ники</h2>
-		<div class="max-h-96 overflow-y-auto space-y-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+		<div class="space-y-6 scrollbar-track-gray-800">
 			<ul class="space-y-6">
 				for _, nick := range nicknames {
 				<li class="p-5 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
