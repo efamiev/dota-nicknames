@@ -5,6 +5,7 @@ import (
 	"dota-nicknames/services/parsers"
 	"dota-nicknames/types"
 	"fmt"
+	"strings"
 
 	"encoding/json"
 	"io"
@@ -116,6 +117,8 @@ func callLLM(jsonData []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения ответа LLM API: %w", err)
 	}
+
+	log.Println("Ответ от LLM", strings.TrimSpace(string(body)))
 
 	// Обрабатываем статус код
 	if resp.StatusCode != http.StatusOK {

@@ -42,7 +42,7 @@ func Sse(c *fiber.Ctx) error {
 			fmt.Printf("Error while flushing: %v. Closing http connection.\n", err)
 		}
 
-		log.Println("SSE завершено для ID:", id)
+		log.Println("SSE завершено для ID:", id, nicks)
 	}))
 
 	return nil
