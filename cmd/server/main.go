@@ -9,8 +9,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/pprof"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,7 +23,7 @@ type Request struct {
 
 func main() {
 	app := fiber.New()
-	
+
 	app.Use(pprof.New())
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${ip} - ${method} ${path} -> ${latency}\n",
@@ -59,6 +59,6 @@ func main() {
 	api := app.Group("/api")
 	api.Post("/matches", handlers.GetMatches)
 	api.Post("/add-task", handlers.AddTask)
-	
+
 	log.Fatal(app.Listen(":3000"))
 }

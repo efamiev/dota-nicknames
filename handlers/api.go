@@ -62,6 +62,6 @@ func AddTask(c *fiber.Ctx) error {
 	id, _ := helpers.ExtractPlayerID(req.URL)
 
 	c.Set("HX-Location", "/"+fmt.Sprint(id))
-	
+
 	return c.JSON(map[string]int{"id": id})
 }

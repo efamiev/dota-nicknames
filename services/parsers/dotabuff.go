@@ -21,7 +21,7 @@ type MatchData struct {
 
 func FetchMatchData(url string) ([]MatchData, error) {
 	req, err := http.NewRequest("GET", url, nil)
-	
+
 	client := &http.Client{
 		Transport: &helpers.LoggingTransport{Transport: http.DefaultTransport},
 	}

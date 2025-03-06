@@ -52,7 +52,7 @@ func GenerateNicknames(id int) ([]types.Nickname, error) {
 	reqBody, err := json.Marshal(OpenAIRequest{
 		Model: "deepseek/deepseek-chat:free",
 		Messages: []Message{
-			{Role: "system",	Content: types.LLMContent},
+			{Role: "system", Content: types.LLMContent},
 			{Role: "user", Content: string(matches)},
 		},
 	})
@@ -82,12 +82,12 @@ func GenerateNicknames(id int) ([]types.Nickname, error) {
 
 func fetchMatches(id int) ([]byte, error) {
 	url := fmt.Sprintf("https://www.dotabuff.com/players/%d/matches", id)
-	
+
 	matches, err := parsers.FetchMatchData(url)
 	if matches == nil || err != nil {
 		return nil, fmt.Errorf("не удалось получить матчи для ID %d %w", id, err)
 	}
-	
+
 	matchesJson, err := json.Marshal(matches)
 	if err != nil {
 		return nil, fmt.Errorf("не удалось получить матчи для ID %d %w", id, err)

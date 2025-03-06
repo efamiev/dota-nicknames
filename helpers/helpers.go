@@ -58,4 +58,3 @@ func (t *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 	return resp, nil
 }
-
