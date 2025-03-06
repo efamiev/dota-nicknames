@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2/middleware/pprof"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,6 +25,9 @@ func main() {
 	app := fiber.New()
 	
 	app.Use(pprof.New())
+	app.Use(logger.New(logger.Config{
+		Format: "[${time}] ${ip} - ${method} ${path} -> ${latency}\n",
+	}))
 
 	app.Static("/static/", "./static")
 

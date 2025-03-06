@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"dota-nicknames/helpers"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,14 +20,20 @@ type MatchData struct {
 }
 
 func FetchMatchData(url string) ([]MatchData, error) {
-	res, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	
+	client := &http.Client{
+		Transport: &helpers.LoggingTransport{Transport: http.DefaultTransport},
+	}
+	res, err := client.Do(req)
+
 	if err != nil {
-		return []MatchData{}, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
+		return nil, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return []MatchData{}, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
+		return nil, fmt.Errorf("Ошибка при обращении к %s: %w", url, err)
 	}
 
 	// Добавить обработку закрытого профиля

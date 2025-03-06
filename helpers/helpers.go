@@ -2,8 +2,11 @@ package helpers
 
 import (
 	"fmt"
+	"log/slog"
+	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
@@ -31,3 +34,28 @@ func ExtractPlayerID(url string) (int, error) {
 
 	return id, nil
 }
+
+type LoggingTransport struct {
+	Transport http.RoundTripper
+}
+
+func (t *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	start := time.Now()
+
+	resp, err := t.Transport.RoundTrip(req)
+	if err != nil {
+		slog.Error("Ошибка HTTP-запроса", "error", err)
+		return nil, err
+	}
+
+	duration := time.Since(start)
+	slog.Info("HTTP Request",
+		"method", req.Method,
+		"url", req.URL.String(),
+		"status", resp.Status,
+		"duration", duration.String(),
+	)
+
+	return resp, nil
+}
+

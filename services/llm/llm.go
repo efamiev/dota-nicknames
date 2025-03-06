@@ -2,10 +2,10 @@ package llm
 
 import (
 	"bytes"
+	"dota-nicknames/helpers"
 	"dota-nicknames/services/parsers"
 	"dota-nicknames/types"
 	"fmt"
-	"strings"
 
 	"encoding/json"
 	"io"
@@ -17,7 +17,7 @@ import (
 type OpenAIRequest struct {
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
-	Temp     float64   `json:"temperature"`
+	Temp     float64   `json:"temperature,omitempty"`
 }
 
 type Message struct {
@@ -105,7 +105,10 @@ func callLLM(jsonData []byte) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &helpers.LoggingTransport{Transport: http.DefaultTransport},
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка отправки запроса: %w", err)
@@ -118,7 +121,7 @@ func callLLM(jsonData []byte) ([]byte, error) {
 		return nil, fmt.Errorf("ошибка чтения ответа LLM API: %w", err)
 	}
 
-	log.Println("Ответ от LLM", strings.TrimSpace(string(body)))
+	log.Printf("Ответ от LLM %s", body)
 
 	// Обрабатываем статус код
 	if resp.StatusCode != http.StatusOK {
