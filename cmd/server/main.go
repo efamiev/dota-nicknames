@@ -57,7 +57,7 @@ func main() {
 	app.Get("/sse/:id", handlers.Sse)
 
 	api := app.Group("/api")
-	api.Post("/matches", handlers.GetMatches)
+	// api.Post("/matches", handlers.GetMatches)
 	api.Post("/add-task", handlers.AddTask)
 
 	log.Fatal(app.Listen(":3000"))

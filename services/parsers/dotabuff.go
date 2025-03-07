@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"dota-nicknames/helpers"
+	"dota-nicknames/types"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,17 +10,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type MatchData struct {
-	Hero     string
-	Result   string
-	KDA      string
-	Duration string
-	Role     string
-	Lane     string
-	Items    []string
-}
+type Fetcher func(id int) ([]types.MatchData, error)
 
-func FetchMatchData(url string) ([]MatchData, error) {
+func FetchMatchData(id int) ([]types.MatchData, error) {
+	url := fmt.Sprintf("https://www.dotabuff.com/players/%d/matches", id)
+
 	req, err := http.NewRequest("GET", url, nil)
 
 	client := &http.Client{
@@ -42,8 +37,8 @@ func FetchMatchData(url string) ([]MatchData, error) {
 		log.Fatal(err)
 	}
 
-	matches := goquery.Map(doc.Find("section tbody tr").Slice(0, 20), func(i int, s *goquery.Selection) MatchData {
-		match := MatchData{}
+	matches := goquery.Map(doc.Find("section tbody tr").Slice(0, 20), func(i int, s *goquery.Selection) types.MatchData {
+		match := types.MatchData{}
 
 		match.Hero = s.Find("td").Eq(1).Find("a").Text()
 		match.Role = s.Find("td").Eq(2).Find("i").Eq(0).AttrOr("title", "")

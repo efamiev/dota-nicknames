@@ -6,20 +6,23 @@ import (
 	"context"
 	"dota-nicknames/components"
 	"dota-nicknames/services/llm"
+	"dota-nicknames/services/parsers"
 	"dota-nicknames/types"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/patrickmn/go-cache"
 	"github.com/valyala/fasthttp"
 )
 
 var ctx = context.Background()
+var ch = cache.New(40*time.Minute, 80*time.Minute)
 
 func Sse(c *fiber.Ctx) error {
-	log.Println("SSE", c.Params("id"))
-
 	c.Set("Content-Type", "text/event-stream")
 	c.Set("Cache-Control", "no-cache")
 	c.Set("Connection", "keep-alive")
@@ -27,7 +30,20 @@ func Sse(c *fiber.Ctx) error {
 
 	id, _ := strconv.Atoi(c.Params("id"))
 
-	nicks, err := llm.GenerateNicknames(id)
+	matches, err := getMatchData(ch, id, parsers.FetchMatchData)
+	if err != nil {
+	}
+
+	apiUrl := "https://openrouter.ai/api/v1/chat/completions"
+	reqBody, err := json.Marshal(types.OpenAIRequest{
+		Model:          "deepseek/deepseek-chat:free",
+		TextMessage:    types.Message[string]{Role: "system", Content: types.LLMContent},
+		MatchesMessage: types.Message[[]types.MatchData]{Role: "user", Content: matches},
+	})
+	if err != nil {
+	}
+
+	nicks, err := llm.GenerateNicknames(apiUrl, reqBody)
 	if err != nil {
 		// Добавить отправку и отображение ошибки на фронте
 		log.Println("GenerateNicknames error", err)
@@ -48,12 +64,27 @@ func Sse(c *fiber.Ctx) error {
 	return nil
 }
 
+func getMatchData(c *cache.Cache, id int, fetcher parsers.Fetcher) ([]types.MatchData, error) {
+	cm, found := c.Get(strconv.Itoa(id))
+	if found {
+		return cm.([]types.MatchData), nil
+	}
+
+	matches, err := fetcher(id)
+	if err != nil {
+		return nil, fmt.Errorf("FetchMatchData error %s", err)
+	}
+
+	return matches, nil
+}
+
 func renderList(id int, nicknames []types.Nickname) *bytes.Buffer {
 	var buf bytes.Buffer
 
 	component := components.List(id, nicknames)
-	// Добавить обработку ошибки
-	component.Render(ctx, &buf)
+
+	if err := component.Render(ctx, &buf); err != nil {
+	}
 
 	return &buf
 }
